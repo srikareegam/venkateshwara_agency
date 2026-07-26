@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:150440209378:web:55e52f29d95934c9fc27bb"
 };
 const OWNER_EMAIL = "eegamsrikar157@gmail.com";      // must match an account you create in Firebase Auth
-const SUPERVISOR_EMAIL = "supervisor@example.com";  // must match an account you create in Firebase Auth
+const SUPERVISOR_EMAIL = "eegamsrikar@gmail.com";  // must match an account you create in Firebase Auth
 /* ========================================================================= */
 
 const CONFIG_IS_PLACEHOLDER = firebaseConfig.apiKey.includes('PASTE_YOUR');
