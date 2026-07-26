@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Venkateshwara Agency — Register</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#182338">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VK Agency">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -111,6 +118,14 @@
   .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.3px;}
   .badge-P{background:#E4EFE7;color:var(--green);} .badge-A{background:#F6E4E3;color:var(--maroon);}
   .badge-H{background:#F6EEDD;color:#8A6417;} .badge-L{background:#E7EAF0;color:#465580;}
+  .daily-pill{min-width:118px;padding:8px 14px;border-radius:20px;border:1px solid var(--border);
+    background:#FCFBF8;font-family:var(--font-mono);font-weight:700;font-size:12.5px;letter-spacing:0.2px;color:var(--muted);}
+  .daily-pill:hover{border-color:var(--brass);}
+  .daily-pill.st-P{background:#E4EFE7;border-color:#BFDAC7;color:var(--green);}
+  .daily-pill.st-A{background:#F6E4E3;border-color:#E5B9B6;color:var(--maroon);}
+  .daily-pill.st-H{background:#F6EEDD;border-color:#E7CE94;color:#8A6417;}
+  .daily-pill.st-L{background:#E7EAF0;border-color:#C3CAE0;color:#465580;}
+  .dirty-dot{width:7px;height:7px;border-radius:50%;background:var(--brass);display:inline-block;margin-left:6px;}
   .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:14px 0;}
   .cal .dcell{aspect-ratio:1;border:1px solid var(--border);border-radius:6px;display:flex;flex-direction:column;
     align-items:center;justify-content:center;font-size:12px;background:#FCFBF8;font-family:var(--font-mono);}
@@ -223,7 +238,7 @@ function boot(){
     app.innerHTML = `
     <div class="auth-wrap"><div class="auth-card">
       <div class="emblem">V</div>
-      <h1 class="auth-title">Venkateshwar Agency</h1>
+      <h1 class="auth-title">Venkateshwara Agency</h1>
       <p class="auth-sub">Firebase not configured yet</p>
       <p style="font-size:13.5px;line-height:1.6;color:var(--ink);">
         Open this file in a text editor and find the <b>FIREBASE CONFIG</b> section near the top of the
@@ -265,7 +280,7 @@ function renderLogin(errMsg){
   <div class="auth-wrap">
     <div class="auth-card">
       <div class="emblem">V</div>
-      <h1 class="auth-title">Venkateshwar Agency</h1>
+      <h1 class="auth-title">Venkateshwara Agency</h1>
       <p class="auth-sub">Sign in to the register</p>
       <div id="loginErr">${errMsg?`<div class="auth-err">${esc(errMsg)}</div>`:''}</div>
       <div class="field"><label>Sign in as</label>
@@ -309,7 +324,8 @@ const NAV = [
   {id:'dashboard', label:'Dashboard', ic:'◆'},
   {id:'zones', label:'Zones', ic:'▤'},
   {id:'employees', label:'Employees', ic:'☺'},
-  {id:'attendance', label:'Attendance', ic:'☷'},
+  {id:'daily', label:'Daily Attendance', ic:'✓'},
+  {id:'attendance', label:'Monthly Attendance', ic:'☷'},
   {id:'reports', label:'Reports', ic:'▧'},
   {id:'history', label:'History', ic:'⏱'},
   {id:'account', label:'Account', ic:'⚙'},
@@ -322,7 +338,7 @@ function renderShell(){
     <div class="sidebar ${sidebarOpen?'open':''}" id="sidebar">
       <div class="brand">
         <div class="emblem">V</div>
-        <div class="brand-text"><div class="t1">Venkateshwar</div><div class="t2">Agency Register</div></div>
+        <div class="brand-text"><div class="t1">Venkateshwara</div><div class="t2">Agency Register</div></div>
       </div>
       <div id="navlist"></div>
       <div class="sidebar-foot">Signed in as<br><b style="color:#E9E4D6;">${esc(session.username)}</b> · ${session.role}</div>
@@ -357,12 +373,13 @@ function renderNav(){
 function goTo(view){ currentView = view; sidebarOpen=false; document.getElementById('sidebar').classList.remove('open'); renderNav(); renderView(); }
 
 function renderView(){
-  const titles = {dashboard:'Dashboard', zones:'Zones', employees:'Employees', attendance:'Attendance', reports:'Reports', history:'History & Audit Log', account:'Account'};
+  const titles = {dashboard:'Dashboard', zones:'Zones', employees:'Employees', daily:'Daily Attendance', attendance:'Monthly Attendance', reports:'Reports', history:'History & Audit Log', account:'Account'};
   document.getElementById('viewTitle').textContent = titles[currentView] || '';
   const c = document.getElementById('content');
   if(currentView==='dashboard') c.innerHTML = viewDashboard();
   else if(currentView==='zones'){ c.innerHTML = viewZones(); }
   else if(currentView==='employees'){ c.innerHTML = viewEmployees(); }
+  else if(currentView==='daily'){ c.innerHTML = viewDaily(); bindDailyEvents(); }
   else if(currentView==='attendance'){ c.innerHTML = viewAttendance(); bindAttendanceEvents(); }
   else if(currentView==='reports'){ c.innerHTML = viewReports(); bindReportEvents(); }
   else if(currentView==='history'){ c.innerHTML = viewHistory(); }
@@ -551,6 +568,135 @@ async function toggleEmployeeActive(id){
   await sset('employees', EMPLOYEES);
   await logAction(willBeActive?'Reactivated employee':'Deactivated employee', e.name);
   renderView();
+}
+
+/* ============================= DAILY ATTENDANCE (quick tick/cross) ============================= */
+function todayISODate(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+let DAILY_CACHE = {};        // empId -> that month's attendance object (in-memory, may include unsaved edits)
+let DAILY_DIRTY = new Set(); // empId set with unsaved changes
+let DAILY_LOADED_MONTH = null;
+
+function setDailyDate(newDate){
+  if(DAILY_DIRTY.size>0 && !confirm('You have unsaved changes for this date. Discard them?')){
+    const picker = document.getElementById('dailyDatePicker');
+    if(picker) picker.value = window.__dailyDate || todayISODate();
+    return;
+  }
+  window.__dailyDate = newDate;
+  renderView();
+}
+function shiftDailyDate(delta){
+  const cur = window.__dailyDate || todayISODate();
+  const d = new Date(cur+'T00:00:00');
+  d.setDate(d.getDate()+delta);
+  const newDate = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  setDailyDate(newDate);
+}
+
+function viewDaily(){
+  const date = window.__dailyDate || todayISODate();
+  const activeEmp = EMPLOYEES.filter(e=>e.active!==false);
+  const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-IN', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+  return `
+  <div class="toolbar">
+    <button class="btn btn-outline btn-sm" onclick="shiftDailyDate(-1)">‹ Prev day</button>
+    <div class="field" style="margin:0;"><label>Date</label><input type="date" id="dailyDatePicker" value="${date}" onchange="setDailyDate(this.value)"></div>
+    <button class="btn btn-outline btn-sm" onclick="shiftDailyDate(1)">Next day ›</button>
+    <button class="btn btn-outline btn-sm" onclick="setDailyDate(todayISODate())">Today</button>
+    <div style="margin-left:auto;display:flex;gap:8px;">
+      <button class="btn btn-outline btn-sm" onclick="dailyMarkAll('P')">Mark all Present</button>
+      <button class="btn btn-primary" style="width:auto;" onclick="saveDailyAttendance()">Save attendance</button>
+    </div>
+  </div>
+  ${activeEmp.length===0 ? `<div class="card"><div class="empty"><div class="big">No active employees</div>Add employees before marking attendance.</div></div>` : `
+  <div class="card">
+    <div class="section-head"><h2>${dateLabel}</h2></div>
+    <div class="legend">
+      <span><span class="dot" style="background:#3B6B4A;"></span>Present</span>
+      <span><span class="dot" style="background:#8A6417;"></span>Half-day</span>
+      <span><span class="dot" style="background:#8C3230;"></span>Absent</span>
+      <span><span class="dot" style="background:#465580;"></span>Leave</span>
+    </div>
+    <p class="helptext" style="margin-bottom:14px;">Tap a name's status to cycle Present → Half-day → Absent → Leave → blank, then Save.</p>
+    <table><thead><tr><th>Employee</th><th>Zone</th><th style="text-align:center;">Status</th></tr></thead>
+    <tbody id="dailyTbody">
+      ${activeEmp.map(e=>`
+      <tr>
+        <td id="dname-${e.id}"><b>${esc(e.name)}</b>${DAILY_DIRTY.has(e.id)?'<span class="dirty-dot" title="Unsaved change"></span>':''}</td>
+        <td><span class="zonetag">${esc(zoneName(e.zoneId))}</span></td>
+        <td style="text-align:center;"><button class="daily-pill" id="dpill-${e.id}" onclick="cycleDaily('${e.id}')">Tap to mark</button></td>
+      </tr>`).join('')}
+    </tbody></table>
+  </div>`}`;
+}
+
+async function bindDailyEvents(){
+  const date = window.__dailyDate || todayISODate();
+  const month = date.slice(0,7);
+  if(DAILY_LOADED_MONTH !== month){
+    DAILY_CACHE = {}; DAILY_DIRTY.clear(); DAILY_LOADED_MONTH = month;
+  }
+  const activeEmp = EMPLOYEES.filter(e=>e.active!==false);
+  for(const e of activeEmp){
+    if(!(e.id in DAILY_CACHE)){
+      DAILY_CACHE[e.id] = await sget(attKey(e.id, month)) || {};
+    }
+    refreshDailyPill(e.id);
+  }
+}
+
+function refreshDailyPill(empId){
+  const date = window.__dailyDate || todayISODate();
+  const day = Number(date.split('-')[2]);
+  const st = DAILY_CACHE[empId] ? DAILY_CACHE[empId][day] : undefined;
+  const el = document.getElementById('dpill-'+empId);
+  if(!el) return;
+  const labels = {P:'✓ Present', H:'H  Half-day', A:'✕ Absent', L:'—  Leave'};
+  el.className = 'daily-pill' + (st ? ' st-'+st : '');
+  el.textContent = st ? labels[st] : 'Tap to mark';
+}
+
+function cycleDaily(empId){
+  const date = window.__dailyDate || todayISODate();
+  const day = Number(date.split('-')[2]);
+  if(!DAILY_CACHE[empId]) DAILY_CACHE[empId] = {};
+  const cur = DAILY_CACHE[empId][day];
+  const idx = STATUS_CYCLE.indexOf(cur);
+  const next = STATUS_CYCLE[(idx+1) % STATUS_CYCLE.length];
+  if(next===undefined) delete DAILY_CACHE[empId][day]; else DAILY_CACHE[empId][day] = next;
+  DAILY_DIRTY.add(empId);
+  refreshDailyPill(empId);
+  const nameCell = document.getElementById('dname-'+empId);
+  if(nameCell && !nameCell.querySelector('.dirty-dot')) nameCell.insertAdjacentHTML('beforeend', '<span class="dirty-dot" title="Unsaved change"></span>');
+}
+
+function dailyMarkAll(status){
+  const date = window.__dailyDate || todayISODate();
+  const day = Number(date.split('-')[2]);
+  EMPLOYEES.filter(e=>e.active!==false).forEach(e=>{
+    if(!DAILY_CACHE[e.id]) DAILY_CACHE[e.id] = {};
+    DAILY_CACHE[e.id][day] = status;
+    DAILY_DIRTY.add(e.id);
+    refreshDailyPill(e.id);
+  });
+  renderView();
+}
+
+async function saveDailyAttendance(){
+  if(DAILY_DIRTY.size===0){ toast('No changes to save.'); return; }
+  const date = window.__dailyDate || todayISODate();
+  const month = date.slice(0,7);
+  const ids = Array.from(DAILY_DIRTY);
+  for(const empId of ids){
+    await sset(attKey(empId, month), DAILY_CACHE[empId]);
+  }
+  const names = EMPLOYEES.filter(e=>ids.includes(e.id)).map(e=>e.name);
+  const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+  await logAction('Updated daily attendance', `${dateLabel} — ${names.length} employee(s): ${names.slice(0,6).join(', ')}${names.length>6?'…':''}`);
+  DAILY_DIRTY.clear();
+  renderView();
+  toast('Daily attendance saved.');
 }
 
 /* ============================= ATTENDANCE ============================= */
@@ -777,7 +923,7 @@ async function exportExcel(){
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Salary Report');
-  const fname = `Venkateshwar_Salary_${month}_${zoneLabel.replace(/\s+/g,'')}.xlsx`;
+  const fname = `Venkateshwara_Salary_${month}_${zoneLabel.replace(/\s+/g,'')}.xlsx`;
   XLSX.writeFile(wb, fname);
   await logAction('Generated report (Excel)', `${monthLabel(month)} — ${zoneLabel}`);
   toast('Excel report downloaded.');
@@ -789,7 +935,7 @@ async function exportPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   doc.setFontSize(14);
-  doc.text('Venkateshwar Agency — Salary Report', 14, 16);
+  doc.text('Venkateshwara Agency — Salary Report', 14, 16);
   doc.setFontSize(10);
   doc.text(`${monthLabel(month)} · ${zoneLabel}`, 14, 23);
   doc.autoTable({
@@ -803,7 +949,7 @@ async function exportPDF(){
   const finalY = doc.lastAutoTable.finalY + 8;
   doc.setFontSize(10);
   doc.text(`Total net payable: Rs. ${totalNet.toFixed(2)}`, 14, finalY);
-  const fname = `Venkateshwar_Salary_${month}_${zoneLabel.replace(/\s+/g,'')}.pdf`;
+  const fname = `Venkateshwara_Salary_${month}_${zoneLabel.replace(/\s+/g,'')}.pdf`;
   doc.save(fname);
   await logAction('Generated report (PDF)', `${monthLabel(month)} — ${zoneLabel}`);
   toast('PDF report downloaded.');
@@ -888,6 +1034,13 @@ async function saveSettings(){
   await sset('settings', SETTINGS);
   await logAction('Updated salary settings', `Basis: ${basis}, Default PF: ${defPf}%`);
   toast('Settings saved.');
+}
+
+/* ============================= PWA: SERVICE WORKER ============================= */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((e) => console.error('SW registration failed', e));
+  });
 }
 </script>
 </body>

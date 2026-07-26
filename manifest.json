@@ -1,0 +1,18 @@
+{
+  "name": "Venkateshwara Agency Register",
+  "short_name": "VK Agency",
+  "description": "Zones, employees, attendance, salary and audit log register for Venkateshwara Agency.",
+  "id": "/venkateshwara_agency/",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F6F3EC",
+  "theme_color": "#182338",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
