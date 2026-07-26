@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dashboard — Venkateshwara Agency</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#182338">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VK Agency">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar" id="topbarSlot"></div>
+  <div class="body-wrap">
+    <div class="sidebar" id="sidebarSlot"></div>
+    <div class="main">
+      <div class="content" id="pageContent">
+<div id="dashboardBody"><div class="loading-screen">Loading…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="bottomnav" id="bottomNavSlot"></div>
+<div class="sheet-overlay" id="sheetOverlay" onclick="if(event.target===this) toggleSheet(false)">
+  <div class="sheet" id="sheetContent"></div>
+</div>
+<script src="firebase-init.js"></script>
+<script src="common.js"></script>
+<script src="shell.js"></script>
+<script>
+initShell('dashboard').then((s)=>{ if(s) initPage(); });
+</script>
+<script src="dashboard.js"></script>
+</body>
+</html>

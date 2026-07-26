@@ -1,8 +1,15 @@
 // Minimal service worker — mainly here so the browser considers the app installable.
 // This tool relies on live Firestore data, so it deliberately does NOT cache or
-// serve app data offline; it just passes requests straight through to the network.
-const CACHE_NAME = 'vk-agency-shell-v1';
-const APP_SHELL = ['./', './index.html'];
+// serve page data offline; it just passes requests straight through to the network,
+// only falling back to a cached shell file if the device is fully offline.
+const CACHE_NAME = 'vk-agency-shell-v2';
+const APP_SHELL = [
+  './', './index.html', './dashboard.html', './zones.html', './employees.html',
+  './daily.html', './attendance.html', './reports.html', './history.html', './account.html',
+  './style.css', './firebase-init.js', './common.js', './shell.js',
+  './dashboard.js', './zones.js', './employees.js', './daily.js',
+  './attendance.js', './reports.js', './history.js', './account.js'
+];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -20,8 +27,6 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network-first: always try live data first, only fall back to the cached
-  // shell if the device is completely offline.
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
   );
