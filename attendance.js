@@ -2,12 +2,13 @@ let attMonth = null;
 let ATT_CACHE = {};
 
 function initPage(){
+  if(!requirePermission('monthlyAttendance')) return;
   attMonth = todayYYYYMM();
   renderAttendance();
 }
 
 function renderAttendance(){
-  const activeEmp = EMPLOYEES.filter(e=>e.active!==false);
+  const activeEmp = visibleEmployees().filter(e=>e.active!==false);
   document.getElementById('attendanceBody').innerHTML = `
   <div class="toolbar">
     <div class="field" style="margin:0;"><label>Month</label><input type="month" id="attMonthPicker" value="${attMonth}" onchange="attMonth=this.value; renderAttendance();"></div>
@@ -34,7 +35,7 @@ function renderAttendance(){
 }
 
 async function bindAttendanceEvents(){
-  const activeEmp = EMPLOYEES.filter(e=>e.active!==false);
+  const activeEmp = visibleEmployees().filter(e=>e.active!==false);
   for(const e of activeEmp){
     const data = await sget(attKey(e.id, attMonth)) || {};
     ATT_CACHE[attKey(e.id, attMonth)] = data;
@@ -45,6 +46,7 @@ async function bindAttendanceEvents(){
 }
 
 function openAttendanceModal(empId, month){
+  if(!canDo('monthlyAttendance')) return toast("You don't have permission to mark attendance.");
   const emp = EMPLOYEES.find(e=>e.id===empId);
   const key = attKey(empId, month);
   const data = ATT_CACHE[key] || {};
@@ -109,6 +111,7 @@ function markAllPresent(totalDays){
 function clearAllDays(){ window.__calData = {}; refreshCalGrid(); }
 
 async function saveAttendance(empId, month){
+  if(!canDo('monthlyAttendance')) return toast("You don't have permission to mark attendance.");
   const key = attKey(empId, month);
   await sset(key, window.__calData);
   ATT_CACHE[key] = {...window.__calData};

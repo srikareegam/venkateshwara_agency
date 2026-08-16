@@ -1,8 +1,8 @@
-function initPage(){ renderReportsPage(); }
+function initPage(){ if(!requirePermission('viewReports')) return; renderReportsPage(); }
 
 function renderReportsPage(){
   const month = todayYYYYMM();
-  const zoneOpts = `<option value="all">All zones</option>` + ZONES.map(z=>`<option value="${z.id}">${esc(z.name)}</option>`).join('');
+  const zoneOpts = `<option value="all">All zones</option>` + visibleZones().map(z=>`<option value="${z.id}">${esc(z.name)}</option>`).join('');
   document.getElementById('reportsBody').innerHTML = `
   <div class="toolbar">
     <div class="field" style="margin:0;flex:1;min-width:130px;"><label>Month</label><input type="month" id="repMonth" value="${month}"></div>
@@ -18,7 +18,7 @@ async function generateReport(){
   const month = document.getElementById('repMonth').value || todayYYYYMM();
   const zoneId = document.getElementById('repZone').value;
 
-  let list = EMPLOYEES.filter(e=>e.active!==false);
+  let list = visibleEmployees().filter(e=>e.active!==false);
   if(zoneId!=='all') list = list.filter(e=>e.zoneId===zoneId);
 
   const rows = [];

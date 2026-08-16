@@ -2,13 +2,15 @@
 // This tool relies on live Firestore data, so it deliberately does NOT cache or
 // serve page data offline; it just passes requests straight through to the network,
 // only falling back to a cached shell file if the device is fully offline.
-const CACHE_NAME = 'vk-agency-shell-v2';
+const CACHE_NAME = 'vk-agency-shell-v3';
 const APP_SHELL = [
   './', './index.html', './dashboard.html', './zones.html', './employees.html',
   './daily.html', './attendance.html', './reports.html', './history.html', './account.html',
+  './supervisors.html',
   './style.css', './firebase-init.js', './common.js', './shell.js',
   './dashboard.js', './zones.js', './employees.js', './daily.js',
-  './attendance.js', './reports.js', './history.js', './account.js'
+  './attendance.js', './reports.js', './history.js', './account.js',
+  './supervisors.js'
 ];
 
 self.addEventListener('install', (event) => {

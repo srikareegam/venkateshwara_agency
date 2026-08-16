@@ -35,26 +35,60 @@ function renderLogin(errMsg){
       <p class="auth-sub">Sign in to the register</p>
       <div id="loginErr">${errMsg?`<div class="auth-err">${esc(errMsg)}</div>`:''}</div>
       <div class="field"><label>Sign in as</label>
-        <select id="loginRole"><option value="owner">Owner</option><option value="supervisor">Supervisor</option></select>
+        <select id="loginRole" onchange="toggleLoginFields()"><option value="owner">Owner</option><option value="supervisor">Supervisor</option></select>
       </div>
-      <div class="field"><label>Password</label><input id="loginPass" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter')handleLogin()"></div>
+      <div id="ownerFields">
+        <div class="field"><label>Password</label><input id="loginPass" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter')handleLogin()"></div>
+      </div>
+      <div id="supervisorFields" style="display:none;">
+        <div class="field"><label>Username</label><input id="loginUsername" placeholder="Your username" onkeydown="if(event.key==='Enter')handleLogin()"></div>
+        <div class="field"><label>Password</label><input id="loginSupPass" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter')handleLogin()"></div>
+      </div>
       <button class="btn btn-primary" onclick="handleLogin()">Sign in</button>
-      <p class="auth-note">Owner and Supervisor accounts only, managed in Firebase Authentication.</p>
+      <p class="auth-note">Owner and Supervisor accounts only. Supervisor accounts are created and managed by the Owner.</p>
     </div>
   </div>`;
 }
 
+function toggleLoginFields(){
+  const role = document.getElementById('loginRole').value;
+  document.getElementById('ownerFields').style.display = role==='owner' ? '' : 'none';
+  document.getElementById('supervisorFields').style.display = role==='supervisor' ? '' : 'none';
+}
+
 async function handleLogin(){
   const role = document.getElementById('loginRole').value;
-  const p = document.getElementById('loginPass').value;
   const errBox = document.getElementById('loginErr');
   errBox.innerHTML = '';
-  const email = role === 'owner' ? OWNER_EMAIL : SUPERVISOR_EMAIL;
+
+  if(role === 'owner'){
+    const p = document.getElementById('loginPass').value;
+    try{
+      await auth.signInWithEmailAndPassword(OWNER_EMAIL, p);
+      localStorage.removeItem('vk_supervisor_id');
+      window.location.href = 'dashboard.html';
+    }catch(e){
+      errBox.innerHTML = `<div class="auth-err">Sign-in failed: ${esc(e.message || 'incorrect password')}</div>`;
+    }
+    return;
+  }
+
+  const username = document.getElementById('loginUsername').value.trim();
+  const pass = document.getElementById('loginSupPass').value;
+  if(!username || !pass){ errBox.innerHTML = `<div class="auth-err">Enter your username and password.</div>`; return; }
   try{
-    await auth.signInWithEmailAndPassword(email, p);
+    await auth.signInWithEmailAndPassword(SUPERVISOR_POOL_EMAIL, SUPERVISOR_POOL_PASSWORD);
+    const supervisors = await sget('supervisors') || [];
+    const match = supervisors.find(s => s.username && s.username.toLowerCase()===username.toLowerCase() && s.password===pass && s.active!==false);
+    if(!match){
+      await auth.signOut();
+      errBox.innerHTML = `<div class="auth-err">Incorrect username or password.</div>`;
+      return;
+    }
+    localStorage.setItem('vk_supervisor_id', match.id);
     window.location.href = 'dashboard.html';
   }catch(e){
-    errBox.innerHTML = `<div class="auth-err">Sign-in failed: ${esc(e.message || 'incorrect password')}</div>`;
+    errBox.innerHTML = `<div class="auth-err">Sign-in failed: ${esc(e.message || 'unknown error')}</div>`;
   }
 }
 
@@ -68,16 +102,28 @@ async function handleLogin(){
       <p class="auth-sub">Firebase not configured yet</p>
       <p style="font-size:13.5px;line-height:1.6;color:var(--ink);">
         Open <code>firebase-init.js</code> and paste in your project's config values, and set
-        <code>OWNER_EMAIL</code> / <code>SUPERVISOR_EMAIL</code> to the two accounts you created in
-        Firebase Authentication. Save and reload.
+        <code>OWNER_EMAIL</code> to your Owner account and <code>SUPERVISOR_POOL_EMAIL</code> /
+        <code>SUPERVISOR_POOL_PASSWORD</code> to a technical account you create in Firebase
+        Authentication (used behind the scenes for supervisor logins — individual supervisors are
+        created afterwards from the Supervisors page). Save and reload.
       </p>
     </div></div>`;
     return;
   }
-  waitForAuthUser().then((user) => {
+  waitForAuthUser().then(async (user) => {
     if(user){
-      const ok = (user.email && (user.email.toLowerCase()===OWNER_EMAIL.toLowerCase() || user.email.toLowerCase()===SUPERVISOR_EMAIL.toLowerCase()));
-      if(ok){ window.location.href = 'dashboard.html'; return; }
+      const email = (user.email||'').toLowerCase();
+      if(email === OWNER_EMAIL.toLowerCase()){ window.location.href = 'dashboard.html'; return; }
+      if(email === SUPERVISOR_POOL_EMAIL.toLowerCase()){
+        const supervisorId = localStorage.getItem('vk_supervisor_id');
+        const supervisors = supervisorId ? (await sget('supervisors') || []) : [];
+        const sup = supervisorId ? supervisors.find(s=>s.id===supervisorId && s.active!==false) : null;
+        if(sup){ window.location.href = 'dashboard.html'; return; }
+        localStorage.removeItem('vk_supervisor_id');
+        await auth.signOut();
+        renderLogin();
+        return;
+      }
       auth.signOut().then(()=>renderLogin('That account is not set as Owner or Supervisor in this app.'));
       return;
     }

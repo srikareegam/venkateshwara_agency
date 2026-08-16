@@ -1,13 +1,44 @@
 /* ============================= SHARED STATE ============================= */
-let session = null; // {role, username}
-let ZONES = [], EMPLOYEES = [], SETTINGS = {}, LOGS = [];
+let session = null; // owner: {role:'owner', username} · supervisor: {role:'supervisor', supervisorId, username, name, zoneIds, permissions}
+let ZONES = [], EMPLOYEES = [], SETTINGS = {}, LOGS = [], SUPERVISORS = [];
 const DEFAULT_SETTINGS = { salaryDayBasis: 'calendar', defaultPfPercent: 12 };
+const PERMISSION_KEYS = ['addEmployees','editEmployees','dailyAttendance','monthlyAttendance','viewReports','viewHistory'];
+const PERMISSION_LABELS = { addEmployees:'Add employees', editEmployees:'Edit / deactivate employees', dailyAttendance:'Mark daily attendance', monthlyAttendance:'Mark monthly attendance', viewReports:'View reports', viewHistory:'View history' };
+const DEFAULT_PERMISSIONS = { addEmployees:true, editEmployees:false, dailyAttendance:true, monthlyAttendance:false, viewReports:false, viewHistory:false };
 
 async function loadAllData(){
   ZONES = await sget('zones') || [];
   EMPLOYEES = await sget('employees') || [];
   SETTINGS = await sget('settings') || {...DEFAULT_SETTINGS};
   LOGS = await sget('logs') || [];
+  SUPERVISORS = await sget('supervisors') || [];
+}
+
+/* ============================= ROLE / PERMISSION HELPERS ============================= */
+function canDo(permKey){
+  if(!session) return false;
+  if(session.role === 'owner') return true;
+  return !!(session.permissions && session.permissions[permKey]);
+}
+function visibleZoneIds(){
+  if(!session || session.role === 'owner') return null; // null = unrestricted, sees all zones
+  return session.zoneIds || [];
+}
+function visibleZones(){
+  const ids = visibleZoneIds();
+  return ids===null ? ZONES : ZONES.filter(z=>ids.includes(z.id));
+}
+function visibleEmployees(){
+  const ids = visibleZoneIds();
+  return ids===null ? EMPLOYEES : EMPLOYEES.filter(e=>ids.includes(e.zoneId));
+}
+function requireOwner(){
+  if(session && session.role !== 'owner'){ toast("You don't have access to that page."); window.location.href = 'dashboard.html'; return false; }
+  return true;
+}
+function requirePermission(permKey){
+  if(!canDo(permKey)){ toast("You don't have access to that page."); window.location.href = 'dashboard.html'; return false; }
+  return true;
 }
 
 async function logAction(action, details=''){

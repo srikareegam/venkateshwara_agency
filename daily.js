@@ -4,6 +4,7 @@ let DAILY_DIRTY = new Set();
 let DAILY_LOADED_MONTH = null;
 
 function initPage(){
+  if(!requirePermission('dailyAttendance')) return;
   dailyDate = todayISODate();
   renderDaily();
 }
@@ -26,7 +27,7 @@ function shiftDailyDate(delta){
 
 async function renderDaily(){
   const date = dailyDate;
-  const activeEmp = EMPLOYEES.filter(e=>e.active!==false);
+  const activeEmp = visibleEmployees().filter(e=>e.active!==false);
   const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-IN', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
   document.getElementById('dailyBody').innerHTML = `
   <div class="toolbar">
@@ -67,7 +68,7 @@ async function bindDailyEvents(){
   if(DAILY_LOADED_MONTH !== month){
     DAILY_CACHE = {}; DAILY_DIRTY.clear(); DAILY_LOADED_MONTH = month;
   }
-  const activeEmp = EMPLOYEES.filter(e=>e.active!==false);
+  const activeEmp = visibleEmployees().filter(e=>e.active!==false);
   for(const e of activeEmp){
     if(!(e.id in DAILY_CACHE)){
       DAILY_CACHE[e.id] = await sget(attKey(e.id, month)) || {};
@@ -105,7 +106,7 @@ function cycleDaily(empId){
 
 function dailyMarkAll(status){
   const day = Number(dailyDate.split('-')[2]);
-  EMPLOYEES.filter(e=>e.active!==false).forEach(e=>{
+  visibleEmployees().filter(e=>e.active!==false).forEach(e=>{
     if(!DAILY_CACHE[e.id]) DAILY_CACHE[e.id] = {};
     DAILY_CACHE[e.id][day] = status;
     DAILY_DIRTY.add(e.id);
@@ -114,6 +115,7 @@ function dailyMarkAll(status){
 }
 
 async function saveDailyAttendance(){
+  if(!canDo('dailyAttendance')) return toast("You don't have permission to mark attendance.");
   if(DAILY_DIRTY.size===0){ toast('No changes to save.'); return; }
   const month = dailyDate.slice(0,7);
   const ids = Array.from(DAILY_DIRTY);

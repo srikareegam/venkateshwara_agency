@@ -1,6 +1,6 @@
 let histQuery = '';
 
-function initPage(){ renderHistory(); }
+function initPage(){ if(!requirePermission('viewHistory')) return; renderHistory(); }
 
 function renderHistory(){
   const q = histQuery.toLowerCase();

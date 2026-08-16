@@ -1,16 +1,15 @@
-function initPage(){ renderAccount(); }
+function initPage(){ if(!requireOwner()) return; renderAccount(); }
 
 function renderAccount(){
   document.getElementById('accountBody').innerHTML = `
   <div class="card">
     <h2 style="font-family:var(--font-display);font-size:16px;margin-top:0;">Owner password</h2>
     <p class="helptext" style="margin-top:0;">Sends a password reset link to ${esc(OWNER_EMAIL)}.</p>
-    <button class="btn btn-outline" style="width:100%;" onclick="sendReset('owner')">Send reset link</button>
+    <button class="btn btn-outline" style="width:100%;" onclick="sendReset()">Send reset link</button>
   </div>
   <div class="card">
-    <h2 style="font-family:var(--font-display);font-size:16px;margin-top:0;">Supervisor password</h2>
-    <p class="helptext" style="margin-top:0;">Sends a password reset link to ${esc(SUPERVISOR_EMAIL)}.</p>
-    <button class="btn btn-outline" style="width:100%;" onclick="sendReset('supervisor')">Send reset link</button>
+    <h2 style="font-family:var(--font-display);font-size:16px;margin-top:0;">Supervisor accounts</h2>
+    <p class="helptext" style="margin-top:0;">Supervisor usernames, passwords, zone assignments and permissions are managed on the <a href="supervisors.html" style="color:var(--brass);font-weight:600;">Supervisors</a> page.</p>
   </div>
   <div class="card">
     <h2 style="font-family:var(--font-display);font-size:16px;margin-top:0;">Salary settings</h2>
@@ -33,12 +32,11 @@ function renderAccount(){
   </div>`;
 }
 
-async function sendReset(role){
-  const email = role==='owner' ? OWNER_EMAIL : SUPERVISOR_EMAIL;
+async function sendReset(){
   try{
-    await auth.sendPasswordResetEmail(email);
-    await logAction('Requested password reset', `${role} account (${email})`);
-    toast(`Reset link sent to ${email}.`);
+    await auth.sendPasswordResetEmail(OWNER_EMAIL);
+    await logAction('Requested password reset', `owner account (${OWNER_EMAIL})`);
+    toast(`Reset link sent to ${OWNER_EMAIL}.`);
   }catch(e){
     toast(`Couldn't send reset email: ${e.message || 'unknown error'}`);
   }

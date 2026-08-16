@@ -1,4 +1,4 @@
-function initPage(){ renderZones(); }
+function initPage(){ if(!requireOwner()) return; renderZones(); }
 
 function renderZones(){
   document.getElementById('zonesBody').innerHTML = `

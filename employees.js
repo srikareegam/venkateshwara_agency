@@ -3,19 +3,23 @@ let showInactive = false;
 function initPage(){ renderEmployees(); }
 
 function renderEmployees(){
-  const list = EMPLOYEES.filter(e => showInactive ? true : e.active!==false);
+  const zones = visibleZones();
+  const canAdd = canDo('addEmployees') && zones.length>0;
+  const canEdit = canDo('editEmployees');
+  const addTitle = zones.length===0 ? 'Add a zone first' : "You don't have permission to add employees";
+  const list = visibleEmployees().filter(e => showInactive ? true : e.active!==false);
   document.getElementById('employeesBody').innerHTML = `
   <div class="toolbar">
-    <button class="btn btn-brass" onclick="openEmployeeModal()" ${ZONES.length===0?'disabled title="Add a zone first"':''}>+ Add employee</button>
+    <button class="btn btn-brass" onclick="openEmployeeModal()" ${canAdd?'':`disabled title="${addTitle}"`}>+ Add employee</button>
     <label style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-left:auto;">
       <input type="checkbox" ${showInactive?'checked':''} onchange="showInactive=this.checked; renderEmployees();"> Show inactive too
     </label>
   </div>
-  ${ZONES.length===0 ? `<div class="card"><div class="empty"><div class="big">Add a zone first</div>Employees are assigned to a zone, so create at least one zone before adding people.</div></div>` : `
+  ${zones.length===0 ? `<div class="card"><div class="empty"><div class="big">No zones available</div>${session.role==='owner'?'Employees are assigned to a zone, so create at least one zone before adding people.':"You haven't been assigned any zones yet. Ask the Owner to assign you a zone."}</div></div>` : `
   <div class="card">
-    ${list.length===0 ? `<div class="empty"><div class="big">No employees yet</div>Tap "Add employee" to get started.</div>` : `
+    ${list.length===0 ? `<div class="empty"><div class="big">No employees yet</div>${canAdd?'Tap "Add employee" to get started.':'No employees in your zone(s) yet.'}</div>` : `
     <p class="scroll-hint">← Swipe sideways to see more columns →</p>
-    <table><thead><tr><th>Name</th><th>Zone</th><th>Monthly salary</th><th>PF %</th><th>Status</th><th></th></tr></thead><tbody>
+    <table><thead><tr><th>Name</th><th>Zone</th><th>Monthly salary</th><th>PF %</th><th>Status</th>${canEdit?'<th></th>':''}</tr></thead><tbody>
       ${list.map(e=>`
       <tr style="${e.active===false?'opacity:0.5;':''}">
         <td><b>${esc(e.name)}</b></td>
@@ -23,10 +27,10 @@ function renderEmployees(){
         <td class="num-cell">${inr(e.monthlySalary)}</td>
         <td class="num-cell">${e.pfPercent}%</td>
         <td>${e.active===false ? '<span class="badge badge-A">Inactive</span>' : '<span class="badge badge-P">Active</span>'}</td>
-        <td style="text-align:right;white-space:nowrap;">
+        ${canEdit ? `<td style="text-align:right;white-space:nowrap;">
           <button class="btn btn-outline btn-sm" onclick="openEmployeeModal('${e.id}')">Edit</button>
           <button class="btn ${e.active===false?'btn-outline':'btn-danger'} btn-sm" onclick="toggleEmployeeActive('${e.id}')">${e.active===false?'Reactivate':'Deactivate'}</button>
-        </td>
+        </td>` : ''}
       </tr>`).join('')}
     </tbody></table>`}
   </div>`}`;
@@ -34,8 +38,10 @@ function renderEmployees(){
 
 function openEmployeeModal(id){
   const editing = !!id;
+  if(editing && !canDo('editEmployees')) return toast("You don't have permission to edit employees.");
+  if(!editing && !canDo('addEmployees')) return toast("You don't have permission to add employees.");
   const e = editing ? EMPLOYEES.find(x=>x.id===id) : null;
-  const zoneOpts = ZONES.map(z=>`<option value="${z.id}" ${e&&e.zoneId===z.id?'selected':''}>${esc(z.name)}</option>`).join('');
+  const zoneOpts = visibleZones().map(z=>`<option value="${z.id}" ${e&&e.zoneId===z.id?'selected':''}>${esc(z.name)}</option>`).join('');
   document.body.insertAdjacentHTML('beforeend', `
   <div class="modal-bg" id="empModal">
     <div class="modal">
@@ -57,8 +63,11 @@ function openEmployeeModal(id){
 }
 
 async function saveEmployee(id){
+  if(id && !canDo('editEmployees')) return toast("You don't have permission to edit employees.");
+  if(!id && !canDo('addEmployees')) return toast("You don't have permission to add employees.");
   const name = document.getElementById('empName').value.trim();
   const zoneId = document.getElementById('empZone').value;
+  if(visibleZoneIds()!==null && !visibleZoneIds().includes(zoneId)) return toast("You can't assign employees outside your zones.");
   const salary = parseFloat(document.getElementById('empSalary').value);
   const pf = parseFloat(document.getElementById('empPf').value);
   const join = document.getElementById('empJoin').value;
@@ -90,6 +99,7 @@ async function saveEmployee(id){
 }
 
 async function toggleEmployeeActive(id){
+  if(!canDo('editEmployees')) return toast("You don't have permission to edit employees.");
   const e = EMPLOYEES.find(x=>x.id===id);
   if(!e) return;
   const willBeActive = e.active===false;
