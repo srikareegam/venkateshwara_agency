@@ -178,3 +178,49 @@ tbody tr:hover{background:#FBFAF6;}
 .scroll-hint{display:block;font-size:11px;color:var(--muted);margin-bottom:8px;}
 @media(min-width:820px){.scroll-hint{display:none;}}
 .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;}
+
+/* ---------- form section groups (used by permission/zone pickers) ---------- */
+.form-section{margin-bottom:18px;}
+.form-section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;}
+.form-section-head label{font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:0.3px;}
+.form-section-count{font-family:var(--font-mono);font-size:11px;color:var(--brass);background:#FBF3E6;border:1px solid #EAD9B6;padding:2px 8px;border-radius:20px;}
+.form-section-box{border:1px solid var(--border);border-radius:10px;background:#FCFBF8;}
+
+/* ---------- chip-style multi-select (e.g. zone picker) ---------- */
+.chip-group{display:flex;flex-wrap:wrap;gap:8px;padding:12px;}
+.chip-check{display:inline-flex;position:relative;}
+.chip-check input{position:absolute;opacity:0;width:0;height:0;}
+.chip-check span{display:inline-flex;align-items:center;gap:5px;padding:8px 15px;border-radius:20px;
+  border:1px solid var(--border);background:#fff;font-size:13px;font-weight:600;color:var(--ink);
+  cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease;user-select:none;}
+.chip-check span:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--border);transition:background .12s ease;}
+.chip-check input:checked + span{background:var(--brass);border-color:var(--brass);color:#fff;}
+.chip-check input:checked + span:before{background:#fff;}
+.chip-check input:focus-visible + span{box-shadow:0 0 0 3px rgba(169,120,47,0.25);}
+.chip-empty{padding:14px;font-size:13px;color:var(--muted);}
+
+/* ---------- toggle-switch list (e.g. permission picker) ---------- */
+.perm-list{display:flex;flex-direction:column;}
+.perm-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;
+  border-bottom:1px solid var(--rule);cursor:pointer;}
+.perm-row:last-child{border-bottom:none;}
+.perm-row-text b{display:block;font-size:13.5px;font-weight:600;color:var(--ink);}
+.perm-row-text span{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4;}
+.switch{position:relative;display:inline-block;width:40px;height:23px;flex-shrink:0;}
+.switch input{position:absolute;opacity:0;width:0;height:0;}
+.switch-track{position:absolute;inset:0;background:#D8D2C0;border-radius:20px;transition:background .15s ease;}
+.switch-thumb{position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,0.3);transition:transform .15s ease;}
+.switch input:checked + .switch-track{background:var(--brass);}
+.switch input:checked + .switch-track .switch-thumb{transform:translateX(17px);}
+.switch input:focus-visible + .switch-track{box-shadow:0 0 0 3px rgba(169,120,47,0.25);}
+
+/* ---------- credential field with reveal toggle ---------- */
+.reveal-field{position:relative;}
+.reveal-field input{padding-right:70px;}
+.reveal-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;
+  color:var(--brass);font-size:12px;font-weight:700;letter-spacing:0.3px;padding:8px 10px;cursor:pointer;min-height:0;}
+
+.modal-section-title{font-family:var(--font-display);font-size:14.5px;font-weight:600;margin:20px 0 4px;
+  padding-top:16px;border-top:1px solid var(--rule);}
+.modal-section-title:first-of-type{margin-top:0;padding-top:0;border-top:none;}
